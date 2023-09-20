@@ -1,0 +1,10 @@
+pip==23.2.1
+numpy==1.26.0
+plotly==5.17.0
+streamlit==1.26.0
+pandas==2.1.0
+streamlit-lottie==0.0.3
+streamlit-option-menu==0.3.6
+requests==2.30.0
+Pillow==9.5.0
+pyarrow==13.0.0
