@@ -1,4 +1,5 @@
 import requests
+import os
 import pandas as pd
 import streamlit as st
 from  streamlit_lottie import  st_lottie
@@ -6,48 +7,45 @@ from streamlit_option_menu import option_menu
 from  PIL import  Image as Pillow
 import plotly.express as px
 
-df= pd.read_excel(r"Pranna/orders.xlsx")
+#Set up web
+st.set_page_config(page_title="PRANNA ORDERS",
+                        page_icon="🌱",
+                        layout="wide")
 
-used_columns1= ['Nombre (envío)','Fecha del pedido','Teléfono (facturación)','Dirección lineas 1 y 2 (envío)',
-                'Importe total del pedido']
+uploaded_file = st.file_uploader("Upload an article", type=("csv", "xlsx"))
 
-df_client= df[used_columns1]
-df_client_unique=df_client.drop_duplicates(subset='Nombre (envío)')
-
-col_name= {'Hamburguesa Garbanzos':'Garbanzos', 
-           'Hamburguesa Lentejas': 'Lentejas',
-            'Hamburguesa Remolacha - Sin Gluten':'Remolacha SG',
-            'Hamburguesa Espinaca':'Espinaca',
-            'Hamburguesa Setas y Cebolla': 'Setas',
-            'Hamburguesa La Sueca': 'Sueca',
-            'Hamburguesa Shitake - Sin Gluten': 'Shitake SG',
-            'Hamburguesa Alubias':'Alubias',
-            'Frankfurt Vegano - Sin Gluten': 'Frankfurt'}
-
-used_columns= ['Teléfono (facturación)',
-                'Nombre (envío)', 'Dirección lineas 1 y 2 (envío)',
-                'Importe total del pedido',
-                'SKU', 'Artículo #', 'Nombre del artículo', 'Cantidad (- reembolso)',
-                'Coste de artículo']
-
-dfp= df[used_columns]
-
-# Pivota la tabla para obtener una columna para cada producto y un solo "Nombre (envío)"
-df_orders = dfp.pivot(index='Nombre (envío)', columns='Nombre del artículo', values='Cantidad (- reembolso)').fillna('')
-
-# Restablece el índice para que 'Nombre (envío)' sea una columna en lugar de un índice
-df_orders.reset_index(inplace=True)
-
-# Renombra las columnas para eliminar el nombre de la columna de valores
-df_orders.columns.name = None
-df_orders.rename(columns=col_name,inplace=True)
-
-# Ahora, 'df_orders' contendrá la tabla pivotada con una columna para cada producto
-#print(df_client_unique,"\n",df_orders)
-
-df_app= pd.merge(df_client_unique, df_orders, on='Nombre (envío)')
-
-st.dataframe(df_app, use_container_width=True)
+if uploaded_file is not None:
+    df= pd.read_excel(uploaded_file)
+    used_columns1= ['Nombre (envío)','Fecha del pedido','Teléfono (facturación)','Dirección lineas 1 y 2 (envío)',
+                    'Importe total del pedido']
+    df_client= df[used_columns1]
+    df_client_unique=df_client.drop_duplicates(subset='Nombre (envío)')
+    col_name= {'Hamburguesa Garbanzos':'Garbanzos', 
+               'Hamburguesa Lentejas': 'Lentejas',
+                'Hamburguesa Remolacha - Sin Gluten':'Remolacha SG',
+                'Hamburguesa Espinaca':'Espinaca',
+                'Hamburguesa Setas y Cebolla': 'Setas',
+                'Hamburguesa La Sueca': 'Sueca',
+                'Hamburguesa Shitake - Sin Gluten': 'Shitake SG',
+                'Hamburguesa Alubias':'Alubias',
+                'Frankfurt Vegano - Sin Gluten': 'Frankfurt'}
+    used_columns= ['Teléfono (facturación)',
+                    'Nombre (envío)', 'Dirección lineas 1 y 2 (envío)',
+                    'Importe total del pedido',
+                    'SKU', 'Artículo #', 'Nombre del artículo', 'Cantidad (- reembolso)',
+                    'Coste de artículo']
+    dfp= df[used_columns]
+    # Pivota la tabla para obtener una columna para cada producto y un solo "Nombre (envío)"
+    df_orders = dfp.pivot(index='Nombre (envío)', columns='Nombre del artículo', values='Cantidad (- reembolso)').fillna('')
+    # Restablece el índice para que 'Nombre (envío)' sea una columna en lugar de un índice
+    df_orders.reset_index(inplace=True)
+    # Renombra las columnas para eliminar el nombre de la columna de valores
+    df_orders.columns.name = None
+    df_orders.rename(columns=col_name,inplace=True)
+    # Ahora, 'df_orders' contendrá la tabla pivotada con una columna para cada producto
+    #print(df_client_unique,"\n",df_orders)
+    df_app= pd.merge(df_client_unique, df_orders, on='Nombre (envío)')
+    st.dataframe(df_app, use_container_width=True)
 
 
 
@@ -107,5 +105,4 @@ st.dataframe(df_app, use_container_width=True)
 # # print(sku,"\n",producto)#,"\n",productos)
 
 # # dfp= pd.DataFrame()
-
 
