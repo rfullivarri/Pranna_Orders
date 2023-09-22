@@ -13,6 +13,7 @@ st.set_page_config(page_title="PRANNA ORDERS",
                         page_icon="🌱",
                         layout="wide")
 
+
 imagen_space,imagen_emprty=st.columns((1,3))
 with imagen_space:
     st.image(r"image/pranna . LOGO PRINCIPAL.png",use_column_width=True)
@@ -21,6 +22,8 @@ with imagen_emprty:
 st.markdown("<h1 style='text-align: center; font-size: 70px;'>ORDERS</h1>", unsafe_allow_html=True)
 uploaded_file = st.file_uploader("Upload an article", type=("csv", "xlsx"))
 
+
+
 if uploaded_file is not None:
     df= pd.read_excel(uploaded_file)
     #df= pd.read_excel(r"orders.xlsx")
@@ -28,8 +31,16 @@ if uploaded_file is not None:
                     'Importe total del pedido']
     df_client= df[used_columns1]
     df_client_unique=df_client.drop_duplicates(subset='Nombre (envío)')
-    col_name= {'Hamburguesa Garbanzos':'Garbanzos', 
-               'Hamburguesa Lentejas': 'Lentejas',
+    col_name_client={'Nombre (envío)':'Nombre',
+                     'Fecha del pedido':'Fecha del pedido',
+                     'Teléfono (facturación)':'Teléfono',
+                     'Dirección lineas 1 y 2 (envío)':'Dirección',
+                     'Importe total del pedido':'Importe'}
+    df_client_unique.rename(columns=col_name_client,inplace=True)
+    
+    col_name= { 'Nombre (envío)':'Nombre',
+                'Hamburguesa Garbanzos':'Garbanzos', 
+                'Hamburguesa Lentejas': 'Lentejas',
                 'Hamburguesa Remolacha - Sin Gluten':'Remolacha SG',
                 'Hamburguesa Espinaca':'Espinaca',
                 'Hamburguesa Setas y Cebolla': 'Setas',
@@ -37,7 +48,6 @@ if uploaded_file is not None:
                 'Hamburguesa Shitake - Sin Gluten': 'Shitake SG',
                 'Hamburguesa Alubias':'Alubias',
                 'Frankfurt Vegano - Sin Gluten': 'Frankfurt'}
-
     
     # Pivota la tabla para obtener una columna para cada producto y un solo "Nombre (envío)"
     df_orders = df.pivot(index='Nombre (envío)', columns='Nombre del artículo', values='Cantidad (- reembolso)').fillna(0).astype(int)
@@ -51,12 +61,75 @@ if uploaded_file is not None:
     df_orders["cant_eti"]= df_orders["Total"].astype(float)-df_orders["Remolacha SG"].astype(float)-df_orders["Shitake SG"].astype(float)
     df_orders["Cant_Etiquetas"]= np.ceil(df_orders["cant_eti"]/6).astype(int)
 
-    df_orders=df_orders[["Nombre (envío)", "Total","Cant_Etiquetas","Frankfurt" , "Alubias" , "Espinaca" , "Garbanzos" , "Sueca" , "Lentejas" , "Setas" ,"Remolacha SG" , "Shitake SG" ]]
+    df_orders=df_orders[["Nombre", "Total","Cant_Etiquetas","Frankfurt" , "Alubias" , "Espinaca" , "Garbanzos" , "Sueca" , "Lentejas" , "Setas" ,"Remolacha SG" , "Shitake SG" ]]
 
-    df_app= pd.merge(df_client_unique, df_orders, on='Nombre (envío)')
+    df_app= pd.merge(df_client_unique, df_orders, on='Nombre')
+
+    preparado = pd.DataFrame({"Preparado":[False]})
+    multiple = pd.DataFrame({"Estado":[""]})
+    df_app.insert(0, 'Preparado', preparado["Preparado"])
+    df_app.insert(1, 'Estado', multiple["Estado"])
+
+    if not os.path.isfile("historial.csv"):
+        with open("historial.csv", "w") as file:
+            file.write(",".join(df_app.columns) + "\n")
+
+    #df_app=df_app.style.set_properties(**{'text-align': 'center'}, subset=pd.IndexSlice[:, :])
+
+    df_entrega=st.data_editor(
+                df_app,
+                column_config={ "Preparado": st.column_config.CheckboxColumn(
+                                "Preparado?",
+                                help="El pedido esta preparado?",
+                                default=False),
+
+                                "Estado": st.column_config.SelectboxColumn(
+                                "Estado del pedido",
+                                help="Seleccionar Estado del pedido",
+                                width="medium",
+                                options=[" ",
+                                         "📊 Entregado y pagado",
+                                         "📈 Entregado sin pagar",
+                                         "🤖 Pedido Preparado"],
+                                required=False)},
+                                disabled=["Nombre","Fecha del pedido",'Teléfono',
+                                            'Dirección',
+                                            'Importe',
+                                            "Total","Cant_Etiquetas",
+                                            "Frankfurt" , "Alubias" ,
+                                            "Espinaca" , "Garbanzos", 
+                                            "Sueca" , "Lentejas" , "Setas" ,
+                                            "Remolacha SG" , "Shitake SG" ],
+                hide_index=True)
     
+    if st.button("Guardar en el Historial"):
+        # Abre el archivo CSV en modo de escritura para agregar datos al final
+        with open("historial.csv", "a") as file:
+            # Escribe los datos de df_app en el archivo CSV
+            df_app.to_csv(file, header=False, index=False)
+        st.success("Los datos han sido guardados en el historial.")
+
+    historial_df = pd.read_csv(r"historial.csv")
+    st.dataframe(historial_df,use_container_width=True)
+
+
+
+
+
+
+
+    #Agrega la columna "Opción" al DataFrame df_app
+    
+    # df_app.insert(0, 'Entregado', st.column_config.CheckboxColumn(
+    #                                         "Entregado",
+    #                                         help="Select **statu`s** order",
+    #                                         default=False,
+    #                                         disabled=True,
+    #                                         required=False
+    #                                     ))
+
     # Muestra el DataFrame con la columna "Opción"
-    st.dataframe(df_app, width=800, height=400, use_container_width=True)
+    #st.data_editor(df_app, width=800, height=400, use_container_width=True)
 
 
 
