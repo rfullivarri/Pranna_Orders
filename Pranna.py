@@ -30,7 +30,7 @@ with imagen_space:
 with imagen_emprty:
     st.empty()    
 st.markdown("<h1 style='text-align: center; font-size: 70px;'>ORDERS</h1>", unsafe_allow_html=True)
-uploaded_file = st.file_uploader("Upload an article", type=("csv", "xlsx"))
+uploaded_file = st.file_uploader("Cargar pedidos de la pagina", type=("csv", "xlsx"))
 
 
 
