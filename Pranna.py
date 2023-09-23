@@ -1,7 +1,7 @@
 import requests
 import os
 import datetime
-import locale
+#import locale
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -42,10 +42,10 @@ if uploaded_file is not None:
 
     #formateamos dia de entrega
     def combinar_dia_fecha(row):
-        locale.setlocale(locale.LC_TIME, 'es_ES.utf-8') #es_ES.UTF-8
+        #locale.setlocale(locale.LC_TIME, 'es_ES.utf-8') #es_ES.UTF-8
         nombre_dia = row.strftime("%A")
         fecha_formateada = row.strftime("%d-%m-%Y")
-        locale.setlocale(locale.LC_TIME, '')
+        #locale.setlocale(locale.LC_TIME, '')
         return f"{nombre_dia} {fecha_formateada}"
 
     df["Fecha de entrega"] = df["Fecha de entrega"].apply(combinar_dia_fecha)
