@@ -13,6 +13,8 @@ st.set_page_config(page_title="PRANNA ORDERS",
                         page_icon="🌱",
                         layout="wide")
 
+#df= pd.read_excel(r"orders-2023-09-22-18-40-41.xlsx")
+
 
 imagen_space,imagen_emprty=st.columns((1,3))
 with imagen_space:
@@ -26,13 +28,14 @@ uploaded_file = st.file_uploader("Upload an article", type=("csv", "xlsx"))
 
 if uploaded_file is not None:
     df= pd.read_excel(uploaded_file)
-    #df= pd.read_excel(r"orders.xlsx")
-    used_columns1= ['Nombre (envío)','Fecha del pedido','Teléfono (facturación)','Dirección lineas 1 y 2 (envío)',
+    df["Hora de entrega"]= [(str(i[26:]).replace('";s:7:"','').replace('time_to";s:5:"',' - ').replace('";}','')) for i in df["Hora de entrega"]]
+    df["Fecha de entrega"]=df["Fecha de entrega"].astype(str)
+    df["Entrega"]=df["Fecha de entrega"] + "\n" + df["Hora de entrega"]
+    used_columns1= ['Nombre (envío)','Entrega','Teléfono (facturación)','Dirección lineas 1 y 2 (envío)',
                     'Importe total del pedido']
     df_client= df[used_columns1]
     df_client_unique=df_client.drop_duplicates(subset='Nombre (envío)')
     col_name_client={'Nombre (envío)':'Nombre',
-                     'Fecha del pedido':'Fecha del pedido',
                      'Teléfono (facturación)':'Teléfono',
                      'Dirección lineas 1 y 2 (envío)':'Dirección',
                      'Importe total del pedido':'Importe'}
@@ -77,31 +80,31 @@ if uploaded_file is not None:
     #df_app=df_app.style.set_properties(**{'text-align': 'center'}, subset=pd.IndexSlice[:, :])
 
     df_entrega=st.data_editor(
-                df_app,
-                column_config={ "Preparado": st.column_config.CheckboxColumn(
-                                "Preparado?",
-                                help="El pedido esta preparado?",
-                                default=False),
+                            df_app,
+                            column_config={ "Preparado": st.column_config.CheckboxColumn(
+                            "Preparado?",
+                            help="El pedido esta preparado?",
+                            default=False),
+                            "Estado": st.column_config.SelectboxColumn(
+                            "Estado del pedido",
+                            help="Seleccionar Estado del pedido",
+                            width="medium",
+                            options=[" ",
+                                     "📊 Entregado y pagado",
+                                     "📈 Entregado sin pagar",
+                                     "🤖 Pedido Preparado"],
+                            required=False)},
+                            disabled=["Nombre","Entrega",'Teléfono',
+                                        'Dirección',
+                                        'Importe',
+                                        "Total","Cant_Etiquetas",
+                                        "Frankfurt" , "Alubias" ,
+                                        "Espinaca" , "Garbanzos", 
+                                        "Sueca" , "Lentejas" , "Setas" ,
+                                        "Remolacha SG" , "Shitake SG" ],
+                            hide_index=True)
 
-                                "Estado": st.column_config.SelectboxColumn(
-                                "Estado del pedido",
-                                help="Seleccionar Estado del pedido",
-                                width="medium",
-                                options=[" ",
-                                         "📊 Entregado y pagado",
-                                         "📈 Entregado sin pagar",
-                                         "🤖 Pedido Preparado"],
-                                required=False)},
-                                disabled=["Nombre","Fecha del pedido",'Teléfono',
-                                            'Dirección',
-                                            'Importe',
-                                            "Total","Cant_Etiquetas",
-                                            "Frankfurt" , "Alubias" ,
-                                            "Espinaca" , "Garbanzos", 
-                                            "Sueca" , "Lentejas" , "Setas" ,
-                                            "Remolacha SG" , "Shitake SG" ],
-                hide_index=True)
-    
+
     if st.button("Guardar en el Historial"):
         # Abre el archivo CSV en modo de escritura para agregar datos al final
         with open("historial.csv", "a") as file:
@@ -116,68 +119,6 @@ if uploaded_file is not None:
 
 
 
-
-
-    #Agrega la columna "Opción" al DataFrame df_app
-    
-    # df_app.insert(0, 'Entregado', st.column_config.CheckboxColumn(
-    #                                         "Entregado",
-    #                                         help="Select **statu`s** order",
-    #                                         default=False,
-    #                                         disabled=True,
-    #                                         required=False
-    #                                     ))
-
-    # Muestra el DataFrame con la columna "Opción"
-    #st.data_editor(df_app, width=800, height=400, use_container_width=True)
-
-
-
-
-
-
-
-
-
-
-
-
-
-    # float_int_columns = [col for col in df_app.columns if df_app[col].dtype in (float, int)]
-    # df_app= df_app.set_flags(subset=float_int_columns, **{'text-align': 'center'})
-
-
-    # Define the CSS styles
-    # st.markdown(
-    #     f"""
-    #     <style>
-    #         .column-specific-style {{
-    #             background-color: #96B0C8; /* Background color for specified columns */
-    #         }}
-    #     </style>
-    #     """,
-    #     unsafe_allow_html=True
-    # )
-
-    # #Define a function to style specific columns with a different background color
-    # def style_specific_columns(s, columns):
-    #     return [f'background-color: #96B0C8' if col in columns else '' for col in s.index]
-
-    # # Apply the styling function to the specified columns
-    # df_app_style = df_app.style.apply(style_specific_columns, columns=["Remolacha SG", "Shitake SG"], axis=1)
-
-    # # Define alternating row colors for all other rows
-    # def alternate_row_colors(s):
-    #     return [f'background-color: #97C0AC' if i % 2 == 0 else f'background-color: #15322C' for i in range(len(s))]
-
-    # # Apply alternating row colors
-    # df_app_style = df_app.style.apply(alternate_row_colors, axis=0)
-
-    # # Center align float and int columns
-    
-    # st.data_editor(df_app_style,use_container_width=True,width=900,column_config=)
-
-  
 
 
 
