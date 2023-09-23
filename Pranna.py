@@ -42,7 +42,7 @@ if uploaded_file is not None:
 
     #formateamos dia de entrega
     def combinar_dia_fecha(row):
-        locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
+        locale.setlocale(locale.LC_TIME, 'es_ES.utf-8') #es_ES.UTF-8
         nombre_dia = row.strftime("%A")
         fecha_formateada = row.strftime("%d-%m-%Y")
         locale.setlocale(locale.LC_TIME, '')
