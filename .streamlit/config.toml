@@ -16,7 +16,6 @@ secondaryBackgroundColor = '#F2D17B'
 
 # Color used for almost all text
 textColor = '#FFFFFF'
-widgetTextColor ='#15322C'
 
 # Font family for all text in the app, except code blocks
 # Accepted values (serif | sans serif | monospace)

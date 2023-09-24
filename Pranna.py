@@ -160,7 +160,7 @@ if uploaded_file is not None:
     with  column_t:  
         st.markdown("<h1 style='text-align: right; font-size: 40px'>ETIQUETAS:</h1>",unsafe_allow_html=True)
     with emptyt2:
-        st.metric("", total_tarjetas)
+        st.write(pedidos_preparados['Cant_Etiquetas'].sum())
     
     st.header("Total a preparar 🛠")
 
@@ -202,7 +202,6 @@ if uploaded_file is not None:
 
     st.write("##")
     st.write("---")
-    st.write("##")
 
     #GUARDADO
     if st.button("Guardar en el Historial"):
