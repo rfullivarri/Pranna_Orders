@@ -160,7 +160,8 @@ if uploaded_file is not None:
     with  column_t:  
         st.markdown("<h1 style='text-align: right; font-size: 40px'>ETIQUETAS:</h1>",unsafe_allow_html=True)
     with emptyt2:
-        st.write(pedidos_preparados['Cant_Etiquetas'].sum())
+        st.markdown("<h1 style='text-align: right; font-size: 40px'>{total_tarjetas}}:</h1>",unsafe_allow_html=True)
+        #st.write(pedidos_preparados['Cant_Etiquetas'].sum())
     
     st.header("Total a preparar 🛠")
 
