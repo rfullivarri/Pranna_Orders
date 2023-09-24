@@ -217,6 +217,7 @@ st.write("---")
 st.write("##")    
 
 #FILTRO
+st.header("Historial")
 historial_df = pd.read_csv(r"historial.csv").drop_duplicates()
 selected_dates = st.multiselect("Filtrar por Cliente",list(historial_df['Nombre'].unique()))
 if selected_dates:
