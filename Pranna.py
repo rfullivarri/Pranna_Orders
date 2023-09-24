@@ -199,16 +199,23 @@ if uploaded_file is not None:
 
 
 
-    #GUARDADO
-    if st.button("Guardar en el Historial"):
-        # Abre el archivo CSV en modo de escritura para agregar datos al final
-        with open("historial.csv", "a") as file:
-            # Escribe los datos de df_app en el archivo CSV
-            df_app.to_csv(file, header=False, index=False)
-        st.success("Los datos han sido guardados en el historial.")
+#GUARDADO
+if st.button("Guardar en el Historial"):
+    # Abre el archivo CSV en modo de escritura para agregar datos al final
+    with open("historial.csv", "a") as file:
+        # Escribe los datos de df_app en el archivo CSV
+        df_app.to_csv(file, header=False, index=False)
+    st.success("Los datos han sido guardados en el historial.")
 
-    historial_df = pd.read_csv(r"historial.csv").drop_duplicates()
-    st.dataframe(historial_df,use_container_width=True)
+#FILTRO
+    selected_dates = st.multiselect("Filtrar por Cliente",list(df_app['Nombre'].unique()))
+
+    if selected_dates:
+        filtered_df = df_app[df_app['Nombre'].isin(selected_dates)]
+    else:
+        filtered_df = df_app
+historial_df = pd.read_csv(r"historial.csv").drop_duplicates()
+st.dataframe(historial_df,use_container_width=True)
 
 
 
