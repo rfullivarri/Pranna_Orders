@@ -6,7 +6,6 @@ from streamlit_extras.metric_cards import style_metric_cards
 import numpy as np
 import pandas as pd
 import streamlit as st
-from  streamlit_lottie import  st_lottie
 from streamlit_option_menu import option_menu
 from  PIL import  Image as Pillow
 import plotly.express as px
@@ -160,15 +159,23 @@ if uploaded_file is not None:
     column_t, emptyt2 =st.columns(2)
     with  column_t:  
         st.markdown("<h1 style='text-align: right; font-size: 40px'>ETIQUETAS:</h1>",unsafe_allow_html=True)
-    emptyt2.metric("", total_tarjetas)
+    with emptyt2:
+        st.metric("", total_tarjetas)
     
     st.header("Total a preparar 🛠")
 
     empty1,column_1,column_2,column_3,column_4,empty2=st.columns(6)
+    style_metric_cards( background_color = "#F2D17B",
+                        border_size_px = 0,
+                        border_color= "#CCC",
+                        border_radius_px= 9,
+                        border_left_color= "#FDF8E0",
+                        box_shadow = False)
     with  empty1:
         st.empty()
     column_1.metric("Alubias", total_alubias)
-    style_metric_cards()
+    
+
     with  column_2:    
         st.metric("Espinaca", total_espinaca)
     with  column_3:
