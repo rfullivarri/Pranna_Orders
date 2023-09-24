@@ -1,6 +1,7 @@
 import requests
 import os
 import datetime
+from streamlit_extras.metric_cards import style_metric_cards
 #import locale
 import numpy as np
 import pandas as pd
@@ -159,16 +160,15 @@ if uploaded_file is not None:
     column_t, emptyt2 =st.columns(2)
     with  column_t:  
         st.markdown("<h1 style='text-align: right; font-size: 40px'>ETIQUETAS:</h1>",unsafe_allow_html=True)
-    with emptyt2:
-        st.metric("", total_tarjetas)
-
+    emptyt2.metric("", total_tarjetas)
+    
     st.header("Total a preparar 🛠")
 
     empty1,column_1,column_2,column_3,column_4,empty2=st.columns(6)
     with  empty1:
         st.empty()
-    with  column_1:   
-        st.metric("Alubias", total_alubias)
+    column_1.metric("Alubias", total_alubias)
+    style_metric_cards()
     with  column_2:    
         st.metric("Espinaca", total_espinaca)
     with  column_3:
@@ -197,15 +197,17 @@ if uploaded_file is not None:
     st.write("---")
     st.write("##")
 
+    #GUARDADO
+    if st.button("Guardar en el Historial"):
+        # Abre el archivo CSV en modo de escritura para agregar datos al final
+        with open("historial.csv", "a") as file:
+            # Escribe los datos de df_app en el archivo CSV
+            df_app.to_csv(file, header=False, index=False)
+        st.success("Los datos han sido guardados en el historial.")
 
-
-#GUARDADO
-if st.button("Guardar en el Historial"):
-    # Abre el archivo CSV en modo de escritura para agregar datos al final
-    with open("historial.csv", "a") as file:
-        # Escribe los datos de df_app en el archivo CSV
-        df_app.to_csv(file, header=False, index=False)
-    st.success("Los datos han sido guardados en el historial.")
+st.write("##")
+st.write("---")
+st.write("##")    
 
 #FILTRO
 historial_df = pd.read_csv(r"historial.csv").drop_duplicates()
@@ -215,6 +217,10 @@ if selected_dates:
 else:
     filtered_df = historial_df
 st.dataframe(filtered_df,use_container_width=True)
+st.header("Cantidad de pedidos")
+
+
+
 
 
 
