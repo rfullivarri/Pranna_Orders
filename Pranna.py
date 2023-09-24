@@ -214,7 +214,7 @@ if selected_dates:
     filtered_df = historial_df[historial_df['Nombre'].isin(selected_dates)]
 else:
     filtered_df = historial_df
-st.dataframe(historial_df,use_container_width=True)
+st.dataframe(filtered_df,use_container_width=True)
 
 
 
