@@ -208,12 +208,12 @@ if st.button("Guardar en el Historial"):
     st.success("Los datos han sido guardados en el historial.")
 
 #FILTRO
-    selected_dates = st.multiselect("Filtrar por Cliente",list(df_app['Nombre'].unique()))
-
-    if selected_dates:
-        filtered_df = df_app[df_app['Nombre'].isin(selected_dates)]
-    else:
-        filtered_df = df_app
+selected_dates = st.multiselect("Filtrar por Cliente",list(df_app['Nombre'].unique()))
+if selected_dates:
+    filtered_df = df_app[df_app['Nombre'].isin(selected_dates)]
+else:
+    filtered_df = df_app
+    
 historial_df = pd.read_csv(r"historial.csv").drop_duplicates()
 st.dataframe(historial_df,use_container_width=True)
 
