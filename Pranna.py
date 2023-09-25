@@ -153,7 +153,7 @@ if uploaded_file is not None:
     total_remola = pedidos_preparados['Remolacha SG'].sum()
     total_shitake = pedidos_preparados['Shitake SG'].sum()
     total_tarjetas = pedidos_preparados['Cant_Etiquetas'].sum()
-
+    
     totales= st.container()
     st.write("---")
     column_t, emptyt2 =st.columns(2)
@@ -175,7 +175,7 @@ if uploaded_file is not None:
                         box_shadow = False)
     with  empty1:
         st.empty()
-    column_1.metric("Alubias", total_alubias)
+    column_1.metric("Alubias", total_alubias,)
     
 
     with  column_2:    
@@ -225,7 +225,7 @@ if selected_dates:
 else:
     filtered_df = historial_df
 st.dataframe(filtered_df,use_container_width=True)
-st.header("Cantidad de pedidos")
+#st.header("Cantidad de pedidos")
 
 
 
