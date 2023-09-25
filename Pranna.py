@@ -160,7 +160,8 @@ if uploaded_file is not None:
     with  column_t:  
         st.markdown("<h1 style='text-align: right; font-size: 40px'>ETIQUETAS:</h1>",unsafe_allow_html=True)
     with emptyt2:
-        st.markdown("<h1 style='text-align: right; font-size: 40px'>{total_tarjetas}</h1>",unsafe_allow_html=True)
+        st.markdown(f"<h1 style='text-align: left; font-size: 40px'>{total_tarjetas}</h1>", unsafe_allow_html=True)
+
         #st.write(pedidos_preparados['Cant_Etiquetas'].sum())
     
     st.header("Total a preparar 🛠")
@@ -203,7 +204,7 @@ if uploaded_file is not None:
 
     st.write("##")
     st.write("---")
-
+    st.write("##")
     #GUARDADO
     if st.button("Guardar en el Historial"):
         # Abre el archivo CSV en modo de escritura para agregar datos al final
@@ -212,7 +213,6 @@ if uploaded_file is not None:
             df_app.to_csv(file, header=False, index=False)
         st.success("Los datos han sido guardados en el historial.")
 
-st.write("##")
 st.write("---")
 st.write("##")    
 
