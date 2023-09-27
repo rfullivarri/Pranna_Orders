@@ -117,7 +117,7 @@ if uploaded_file is not None:
     #TABLA DE DATOS FINAL
     df_entrega=st.data_editor(
                             filtered_df,
-                            column_config={ "Preparado": st.column_config.CheckboxColumn(
+                            column_config={"Preparado": st.column_config.CheckboxColumn(
                             "Preparado?",
                             help="El pedido esta preparado?",
                             default=False),
@@ -153,6 +153,7 @@ if uploaded_file is not None:
     total_remola = pedidos_preparados['Remolacha SG'].sum()
     total_shitake = pedidos_preparados['Shitake SG'].sum()
     total_tarjetas = pedidos_preparados['Cant_Etiquetas'].sum()
+     
     
     totales= st.container()
     st.write("---")
@@ -205,19 +206,21 @@ if uploaded_file is not None:
     st.write("##")
     st.write("---")
     st.write("##")
-    #GUARDADO
-    if st.button("Guardar en el Historial"):
-        # Abre el archivo CSV en modo de escritura para agregar datos al final
-        with open("historial.csv", "a") as file:
-            # Escribe los datos de df_app en el archivo CSV
-            df_app.to_csv(file, header=False, index=False)
-        st.success("Los datos han sido guardados en el historial.")
+
+
+#GUARDADO
+if st.button("Guardar en el Historial"):
+    # Abre el archivo CSV en modo de escritura para agregar datos al final
+    with open("historial.csv", "a") as file:
+        # Escribe los datos de df_app en el archivo CSV
+        df_app.to_csv(file, header=False, index=False)
+    st.success("Los datos han sido guardados en el historial.")
 
 st.write("---")
 st.write("##")    
-
-#FILTRO
 st.header("Historial")
+
+#FILTRO 
 historial_df = pd.read_csv(r"historial.csv").drop_duplicates()
 selected_dates = st.multiselect("Filtrar por Cliente",list(historial_df['Nombre'].unique()))
 if selected_dates:
@@ -225,7 +228,51 @@ if selected_dates:
 else:
     filtered_df = historial_df
 st.dataframe(filtered_df,use_container_width=True)
-#st.header("Cantidad de pedidos")
+
+if historial_df is not None:
+    cant_pedidos= len(filtered_df)
+    if selected_dates:
+        monto_pedido= historial_df[historial_df["Nombre"].isin(selected_dates)]["Importe"].sum()
+    else:
+        monto_pedido= historial_df["Importe"].sum()
+        
+    total_alubias1 = filtered_df['Alubias'].sum()
+    total_espinaca1 = filtered_df['Espinaca'].sum()
+    total_garbanzos1 = filtered_df['Garbanzos'].sum()
+    total_sueca1 = filtered_df['Sueca'].sum()
+    total_lentejas1 = filtered_df['Lentejas'].sum()
+    total_setas1 = filtered_df['Setas'].sum()
+    total_remola1 = filtered_df['Remolacha SG'].sum()
+    total_shitake1 = filtered_df['Shitake SG'].sum()
+    total_tarjetas1 = filtered_df['Cant_Etiquetas'].sum()
+
+    st.header("Info del Cliente")
+    st.write("##")
+    empty111,empty11,column_11,column_22,column_33,column_44,empty22=st.columns(7)
+    style_metric_cards( background_color = "#F2D17B",
+                        border_size_px = 0,
+                        border_color= "#CCC",
+                        border_radius_px= 9,
+                        border_left_color= "#FDF8E0",
+                        box_shadow = False)
+    empty111.empty()
+    empty11.metric("Pedidos", cant_pedidos)
+    column_11.metric("Alubias", total_alubias1)
+    column_22.metric("Espinaca", total_espinaca1)
+    column_33.metric("Garbanzos", total_garbanzos1)
+    column_44.metric("Sueca", total_sueca1)
+    empty22.write("##")        
+    empty333,empty33,column_55,column_66,column_77,column_88,empty44=st.columns(7)
+    st.write("##")
+    empty333.empty()
+    empty33.metric("Importe",monto_pedido)
+    column_55.metric("Lentejas", total_lentejas1)
+    column_66.metric("Setas", total_setas1)
+    column_77.metric("Shitake", total_shitake1)
+    column_88.metric("Remolacha", total_remola1)
+    empty44.empty()
+
+
 
 
 
