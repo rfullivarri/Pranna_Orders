@@ -36,10 +36,9 @@ uploaded_file = st.file_uploader("Cargar pedidos de la pagina", type=("csv", "xl
 
 if uploaded_file is not None:
     df= pd.read_excel(uploaded_file)
-
+    #df= pd.read_excel(r"orders-2023-10-02-09-59-01.xlsx")
     #formateamos hora de entrega
     df["Hora de entrega"]= [(str(i[26:]).replace('";s:7:"','').replace('time_to";s:5:"',' - ').replace('";}','')) for i in df["Hora de entrega"]]
-
     #formateamos dia de entrega
     def combinar_dia_fecha(row):
         #locale.setlocale(locale.LC_TIME, 'es_ES.utf-8') #es_ES.UTF-8
@@ -47,10 +46,7 @@ if uploaded_file is not None:
         fecha_formateada = row.strftime("%d-%m-%Y")
         #locale.setlocale(locale.LC_TIME, '')
         return f"{nombre_dia} {fecha_formateada}"
-
     df["Fecha de entrega"] = df["Fecha de entrega"].apply(combinar_dia_fecha)
-
-
     used_columns1= ['Nombre (envío)','Fecha de entrega','Hora de entrega','Teléfono (facturación)','Dirección lineas 1 y 2 (envío)',
                     'Importe total del pedido']
     df_client= df[used_columns1]
@@ -61,7 +57,7 @@ if uploaded_file is not None:
                      'Dirección lineas 1 y 2 (envío)':'Dirección',
                      'Importe total del pedido':'Importe'}
     df_client_unique.rename(columns=col_name_client,inplace=True)
-    
+
     col_name= { 'Nombre (envío)':'Nombre',
                 'Hamburguesa Garbanzos':'Garbanzos', 
                 'Hamburguesa Lentejas': 'Lentejas',
@@ -72,14 +68,25 @@ if uploaded_file is not None:
                 'Hamburguesa Shitake - Sin Gluten': 'Shitake SG',
                 'Hamburguesa Alubias':'Alubias',
                 'Frankfurt Vegano - Sin Gluten': 'Frankfurt'}
-    
-    # Pivota la tabla para obtener una columna para cada producto y un solo "Nombre (envío)"
+
+    #Crea un DataFrame con todas las columnas de 'col_name' y valores iniciales en 0
+    default_values = {col: 0 for col in col_name.keys()}
+    df_defaults = pd.DataFrame([default_values])
+
+    #Concatena 'df_defaults' con tu DataFrame original 'df'
+    df = pd.concat([df, df_defaults], axis=0, ignore_index=True)
+
+
+    #Pivota la tabla para obtener una columna para cada producto y un solo "Nombre (envío)"
     df_orders = df.pivot(index='Nombre (envío)', columns='Nombre del artículo', values='Cantidad (- reembolso)').fillna(0).astype(int)
-    # Restablece el índice para que 'Nombre (envío)' sea una columna en lugar de un índice
+    #Restablece el índice para que 'Nombre (envío)' sea una columna en lugar de un índice
     df_orders.reset_index(inplace=True)
-    # Renombra las columnas para eliminar el nombre de la columna de valores
+    df_orders = df_orders.reindex(columns=col_name.keys(), fill_value=0)
+    #Renombra las columnas para eliminar el nombre de la columna de valores
     df_orders.columns.name = None
     df_orders.rename(columns=col_name,inplace=True)
+    df_orders.fillna(0, inplace=True)
+    #print(df_orders.columns)
     df_orders["Total"]= df_orders["Garbanzos"]+df_orders["Lentejas"]+df_orders["Espinaca"]+df_orders["Setas"]+df_orders["Alubias"]+df_orders["Frankfurt"]+df_orders["Sueca"]+df_orders["Remolacha SG"]+df_orders["Shitake SG"]
 
     df_orders["cant_eti"]= df_orders["Total"].astype(float)-df_orders["Remolacha SG"].astype(float)-df_orders["Shitake SG"].astype(float)
