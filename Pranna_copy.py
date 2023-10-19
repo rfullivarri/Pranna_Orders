@@ -19,7 +19,7 @@ from googleapiclient.errors import HttpError
 
 SCOPE=['https://www.googleapis.com/auth/spreadsheets']
 
-SPREADSHEET_ID= '1jUkNcmwj0P4v8h-xclnkPklKm9eyD4AosgOaCuY7BZI'
+SPREADSHEET_ID= ''
 
 def get_google_sheets_data():
     credentials= None
