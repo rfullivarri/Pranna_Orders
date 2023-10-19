@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "merchant-center-1664966022287",
+  "private_key_id": "d1b4f85e2eab88891b5f945ee5e7bc5caf72ff60",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDkZSmeSs/wEBmX\nErdXwVYbOWosp0AEQSeEwYE06WuoVQ1+b1egF2cZsYCPlCPCwgyMk+WKh7JJNqm6\nEOSgG6/sNQAj3Li1099mwN4v1ZfMorwLEzaD7B5bHsXHOGyGgvUzYpgtnHLNuMUq\nYCTiKLLRtxIRhRsH2ySw3UZZ5pOVS+3KJEeHPCOnEPWUeYQI+oAAFwWGiKknkMs3\nGX2w4EHvW3TVp8AeMDMBTz5B7fMpaNsuIINCduL/wGTiiyoxbqvghg5SV9NlAM8u\n306Z9dgyBqqlEQbBEFwTp5gjGXDFDzbFhii0JKCmgEvFkYad9uMny8dSJfPH7NsW\nU7yNN5IbAgMBAAECggEACmjd87v/LDbfo7YTqylBrm34e96HmWoKzg8vv2SgJoTx\n34BdowtOBKrFbEXZN2g2wDWBccXrh1C5faSFdxKr+v0Ta48E0Cy+8uT5e36ls4r7\nPRn8Exkw7QBDDWhx8dOIL3Zf7zxBM0Unn13QcIpgVBSe+zNw3vPLAVCkgzZyJYzB\nV3oFuMFAvgee1IbojB7+hnQFnw3wrbbUvF2ym2LOViX+WREawIEXlh9zy2NqE64z\nb+D7j0kRUeRsoSYpXTHuj51dV1nC38koIYJ4AAuFsUI30QXHA658+NaV3iqWS+2r\nyjYYtWO59Q4u/xhcb9s3QXrpO4BZ0po6Sa2NhRkHgQKBgQD1QfUSfyUl/TujhEwu\n3SsLebZ94xxsCWiOJdOmdEctFTUVsoOrvsWfUogLBgDMJo06gfk/QvPtxJEzUgOD\nkhZUxNErHgJ6XviYqTXcBm9vy8952qY2zpB2xCDb1/n+WwIosqWZey3TQESYHfGA\nLMTTKhEvZnjvEa8H6GKOci+bWwKBgQDuZiDgoazClrCmpCA2qGDtKKeoitz2nMj7\nZpj6BpGQL2XWFxp/Bd5FPpZbA8WaRqBlRbNFAOouJH6Y4BTvGRsrAlgopk/X58aR\n/2Wchw2WLzNpw4KMoTVcwUteCh6iyxJOnpXq4olT44V9NVmdsT8qagub6dN42ITi\nL5WLd81gQQKBgQCAYPsoqHdIkGqkaD78lPbQNfDJqpUZFD+vkKteSSVsutojtmLo\nBp8pi6j8pDLMqi1o/9n5PFG1FxyuUXLXbyPTUYbv2/COH6JfPsublZ7FVVkQPtyc\nebnzASz2BvKsKvVRWloGogzVtKFzQtFEN6r7odyHBEuvUIFfUUwtpiW3WwKBgE7Q\nEJpymIyUCL5uj//B1plQ0WyUy8vztTX3iydNOJ40LTSD2syXgg3eTRK1woPoSWpx\ninyLet/aTMf5fLI22JZ1ZfO6V7cG9syZZFxFAabe395dNjGLsfqCJIpoSgyDmf/H\nycQnNEM5eo4ULxZE3J8HA+N9f935pqSoGoZLCuiBAoGBAJXcJwJWXH0gk8vWmsXU\nr8J7tCaPbFzeGO2/syIuvsTQUSUUtsEOFNdz6h4qb9uYQuJwPclJmULtz5cgN+PV\ng2roze4xpm4MNfOIzuZHusfyz6XFmS8kGOyGqYt50mdh/0/KOuRv47dlZxaAPdp6\nNUaL6mK93sV57+/wTmENWGAP\n-----END PRIVATE KEY-----\n",
+  "client_email": "pranna-orders@merchant-center-1664966022287.iam.gserviceaccount.com",
+  "client_id": "104021153876047256520",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/pranna-orders%40merchant-center-1664966022287.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
