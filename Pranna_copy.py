@@ -15,6 +15,9 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+import zipfile
+from io import BytesIO
+from etiquetas import etiquetas
 
 
 SCOPE=['https://www.googleapis.com/auth/spreadsheets']
@@ -78,7 +81,7 @@ if __name__=="__main__":
     sheet_data = get_google_sheets_data()
     if sheet_data:
         df = pd.DataFrame(sheet_data[1:], columns=sheet_data[0])  # Use the first row as column headers
-        print(df,"\n","\n","\n")
+        #print(df,"\n","\n","\n")
 
 
 #Set up web
@@ -156,6 +159,7 @@ df_orders["Etiquetas"]= np.ceil(df_orders["cant_eti"]/6).astype(int)
 df_orders=df_orders[["id", "Total","Etiquetas", "Alubias" , "Espinaca" , "Garbanzos" , "Sueca" , "Lentejas" , "Setas" ,"Frankfurt" ,"Remolacha SG" , "Shitake SG" ]]
 
 
+
 df_app= pd.merge(df_client_u, df_orders, on='id')
 df_app1= df_app[df_app['Status']=='completed']
 df_app= df_app[df_app['Status']=='processing']
@@ -165,7 +169,9 @@ df_app= df_app[['id','Nombre', 'Dirección1', 'Dirección2', 'Dia', 'Hora',
        'Sueca', 'Lentejas', 'Setas', 'Frankfurt', 'Remolacha SG',
        'Shitake SG']]
 
-#print(target_ids)
+# def etiqueta():
+#     return df_app.to_csv('df_app.csv',index=False)
+# etiqueta()
 
 preparado = pd.DataFrame({"A_Preparar":[False]})
 multiple = pd.DataFrame({"Estado":[""]})
@@ -227,10 +233,30 @@ total_tarjetas = pedidos_preparados['Etiquetas'].sum()
 
 totales= st.container()
 st.write("---")
-st.markdown(f"<h1 style='text-align: center; font-size: 40px'>ETIQUETAS: {total_tarjetas}</h1>", unsafe_allow_html=True)
+button1,button2= st.columns((4,1))
+button1.empty()
+#button1.markdown(f"<h1 style='text-align: center; font-size: 40px; display: flex; justify-content: center; align-items: center;'>ETIQUETAS: {total_tarjetas}</h1>",unsafe_allow_html=True,)
+with button2:
+    # Llama a la función etiquetas y obtiene las imágenes generadas
+    etiquetas_images = etiquetas(df_app)
+
+    # Crea un archivo ZIP y agrega las imágenes a él
+    zip_buffer = BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w') as zipf:
+        for i, img_bytes in enumerate(etiquetas_images):
+            zipf.writestr(f"etiqueta_{i}.png", img_bytes)
+
+    # Descarga el archivo ZIP como un solo botón
+    st.download_button(
+        label="Descargar Todas las Etiquetas",
+        data=zip_buffer.getvalue(),
+        key="etiquetas.zip",
+        file_name="etiquetas.zip",)
+
 
 st.header("Total a preparar")
-empty1,column_1,column_2,column_3,column_4,empty2=st.columns(6)
+empty1,etiqueta1,column_1,column_2,column_3,column_4,empty2=st.columns(7)
+etiqueta1.metric("Etiquetas", total_tarjetas)
 style_metric_cards( background_color = "#F2D17B",
                     border_size_px = 0,
                     border_color= "#CCC",
