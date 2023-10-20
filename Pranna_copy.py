@@ -1,15 +1,8 @@
-# import requests
 import os
-# import datetime
 from streamlit_extras.metric_cards import style_metric_cards
-# #import locale
 import numpy as np
 import pandas as pd
 import streamlit as st
-#from streamlit_option_menu import option_menu
-# from  PIL import  Image as Pillow
-# import plotly.express as px
-import gspread
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.oauth2.credentials import Credentials
@@ -22,7 +15,7 @@ from etiquetas import etiquetas
 
 SCOPE=['https://www.googleapis.com/auth/spreadsheets']
 
-SPREADSHEET_ID= ''
+SPREADSHEET_ID= '1jUkNcmwj0P4v8h-xclnkPklKm9eyD4AosgOaCuY7BZI'
 
 def get_google_sheets_data():
     credentials= None
