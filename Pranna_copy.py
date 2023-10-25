@@ -11,6 +11,10 @@ from googleapiclient.errors import HttpError
 import zipfile
 from io import BytesIO
 from etiquetas import etiquetas
+import requests
+import configparser
+from put_status import update_order_status
+
 
 
 SCOPE=['https://www.googleapis.com/auth/spreadsheets']
@@ -62,7 +66,7 @@ def update_status(target_ids):
                 sheets= service.spreadsheets()
                 sheets.values().update(
                     spreadsheetId=SPREADSHEET_ID,
-                    range=f'Ordenes!C{row_index + 1}',  # Reemplaza 'C' con la columna que corresponde a 'Status'
+                    range=f'Ordenes!C{row_index + 1}', 
                     valueInputOption='RAW',
                     body={'values': [['completed']]}
                 ).execute()
@@ -288,12 +292,28 @@ with  empty4:
 st.write("##")
 
 
+# if st.button("Confirmar Preparacion"):
+#     for index, row in df_entrega.iterrows():
+#         if row["Estado"] == "✅ Entregado y pagado":
+#             target_id = row["id"]
+#             update_status([target_id])
+#     get_google_sheets_data()
+
+
+
+config = configparser.ConfigParser()
+config.read('config.ini')
+consumer_key = config['API']['consumer_key']
+consumer_secret = config['API']['consumer_secret']
+
 if st.button("Confirmar Preparacion"):
     for index, row in df_entrega.iterrows():
-        if row["Estado"] == "🔝 Pedido Preparado":
+        if row["Estado"] == "✅ Entregado y pagado":
             target_id = row["id"]
-            update_status([target_id])
-    get_google_sheets_data()
+            update_order_status(target_id, consumer_key, consumer_secret)
+    #get_google_sheets_data()
+
+
 
 st.write("---")
 st.write("##")
