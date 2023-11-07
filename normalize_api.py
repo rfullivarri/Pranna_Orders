@@ -38,6 +38,10 @@ def normalize_data(all_data):
 
     return df_final
 
+# df_final= normalize_data(all_data)
+# for columna in df_final.columns:
+#     primer_valor = df_final[columna][0]
+#     print(f"{columna} // {primer_valor} // {df_final.dtypes}")
 
 # #NORMALIZACION
 # # Normalizar los datos de pedidos con prefijo "order_"

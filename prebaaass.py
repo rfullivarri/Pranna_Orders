@@ -13,7 +13,6 @@ import json
 
 
 #OBTENER DATOS DE API
-# Crear un objeto de configuración
 config = configparser.ConfigParser()
 config.read('config.ini')
 
@@ -25,7 +24,7 @@ consumer_key = config['API']['consumer_key']
 consumer_secret = config['API']['consumer_secret']
 
 # URL de solicitud de token
-request_token_url = 'https://pranna.es/wc-auth/v1/authorize'
+#request_token_url = 'https://pranna.es/wc-auth/v1/authorize'
 
 # Crear una sesión OAuth
 oauth = OAuth1Session(consumer_key, client_secret=consumer_secret)
@@ -58,6 +57,8 @@ print(f"Número de registros obtenidos: {len(all_data)} \n")
 
 
 
+
+
 #NORMALIZACION
 # Normalizar los datos de pedidos con prefijo "order_"
 df_order = pd.json_normalize(all_data, meta=["id"], sep="_", record_prefix="order")
@@ -80,11 +81,9 @@ for record in all_data:
     meta_data_list.append(meta_data_dict)
 df_meta_data = pd.json_normalize(meta_data_list,errors='ignore', meta=["id"], sep="meta_data_", record_prefix="meta_data")
 
-
 # Combinar los DataFrames usando una combinación "left" en función de la columna "order_id"
 df_final = pd.merge(df_order, df_items, on="id", how="left")
 df_final = pd.merge(df_final, df_meta_data, on="id", how="left")
-
 
 columns_to_exclude = ['itemsmeta_data','version', 'itemstaxes', '_links_collection', '_links_self', 'refunds','fee_lines','tax_lines']
 df_final = df_final[[col for col in df_final.columns if col not in columns_to_exclude]]
@@ -96,8 +95,6 @@ df_final['_delivery_time_framemeta_data_time_to'] = df_final['_delivery_date'] +
 # Convierte la cadena en objetos de fecha y hora
 df_final['_delivery_time_framemeta_data_time_from'] = pd.to_datetime(df_final['_delivery_time_framemeta_data_time_from'])
 df_final['_delivery_time_framemeta_data_time_to'] = pd.to_datetime(df_final['_delivery_time_framemeta_data_time_to'])
-
-# #print(df_final.columns)
 
 # # for columna in df_final.columns:
 # #     primer_valor = df_final[columna][0]
