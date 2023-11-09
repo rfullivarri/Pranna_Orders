@@ -1,5 +1,5 @@
 import pandas as pd
-from woo_api import all_data
+from woocommerce.woo_api import all_data
 
 import pandas as pd
 
@@ -38,7 +38,7 @@ def normalize_data(all_data):
     df_final['delivery_time_frame'] = df_final['_delivery_time_framemeta_data_time_from'].dt.strftime('%H:%M') + ' - ' + df_final['_delivery_time_framemeta_data_time_to'].dt.strftime('%H:%M')
     return df_final
 
-print(normalize_data(all_data).columns)
+
 
 # df_final= normalize_data(all_data)
 # for columna in df_final.columns:

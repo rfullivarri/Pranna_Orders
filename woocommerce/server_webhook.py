@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 import psycopg2
 import pandas as pd
 import configparser
-from normalize_api import normalize_data
+from woocommerce.normalize_api import normalize_data
 
 app = Flask(__name__)
 

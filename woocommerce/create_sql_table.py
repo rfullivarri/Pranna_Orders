@@ -1,7 +1,7 @@
 import psycopg2
 import configparser
-from woo_api import all_data
-from normalize_api import normalize_data
+from woocommerce.woo_api import all_data
+from woocommerce.normalize_api import normalize_data
 
 
 #CARGA EN POSTGRE SQL
