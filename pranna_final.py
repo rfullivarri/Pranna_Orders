@@ -57,7 +57,7 @@ oauth = OAuth1Session(consumer_key, client_secret=consumer_secret)
 
 # Calcular la fecha actual y la fecha 
 end_date = datetime.now()
-start_date = end_date - timedelta(days=120)  
+start_date = end_date - timedelta(days=30)  
 
 all_data = []
 page = 1
