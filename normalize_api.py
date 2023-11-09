@@ -35,8 +35,10 @@ def normalize_data(all_data):
     # Convierte las columnas de fecha y hora a objetos de fecha y hora
     df_final['_delivery_time_framemeta_data_time_from'] = pd.to_datetime(df_final['_delivery_date'] + ' ' + df_final['_delivery_time_framemeta_data_time_from'])
     df_final['_delivery_time_framemeta_data_time_to'] = pd.to_datetime(df_final['_delivery_date'] + ' ' + df_final['_delivery_time_framemeta_data_time_to'])
-
+    df_final['delivery_time_frame'] = df_final['_delivery_time_framemeta_data_time_from'].dt.strftime('%H:%M') + ' - ' + df_final['_delivery_time_framemeta_data_time_to'].dt.strftime('%H:%M')
     return df_final
+
+print(normalize_data(all_data).columns)
 
 # df_final= normalize_data(all_data)
 # for columna in df_final.columns:
