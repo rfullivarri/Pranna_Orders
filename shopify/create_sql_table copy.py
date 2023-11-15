@@ -18,7 +18,7 @@ conn = psycopg2.connect(
 
 
 #CREAR TABLA EN POSTGRE
-table_name = 'shopify_orders'
+table_name = 'shopify_orders2'
 
 create_table_query = f"""
 CREATE TABLE IF NOT EXISTS {table_name} (
@@ -247,13 +247,15 @@ conn.commit()
 normalize= normalize_data_1(all_data)
 data_to_insert = normalize.values.tolist()
 
-# Construye la consulta de inserción
-insert_query = f"INSERT INTO {table_name} VALUES ({', '.join(['%s' for _ in range(len(normalize.columns))])})"
+print(len(data_to_insert))
 
-# Inserta los datos en la tabla
-cur.executemany(insert_query, data_to_insert)
-conn.commit()
+# # Construye la consulta de inserción
+# insert_query = f"INSERT INTO {table_name} VALUES ({', '.join(['%s' for _ in range(len(normalize.columns))])})"
 
-# Cierra la conexión a la base de datos
-conn.close()
+# # Inserta los datos en la tabla
+# cur.executemany(insert_query, data_to_insert)
+# conn.commit()
+
+# # Cierra la conexión a la base de datos
+# conn.close()
 

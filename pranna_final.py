@@ -1,18 +1,19 @@
 import os
-from streamlit_extras.metric_cards import style_metric_cards
 import numpy as np
 import pandas as pd
 import streamlit as st
+from streamlit_extras.metric_cards import style_metric_cards
+import joblib
 import zipfile
 from io import BytesIO
 from etiquetas import etiquetas
-import requests
 import configparser
 from put_status import update_order_status
 import configparser
 from requests_oauthlib import OAuth1Session
 from requests_oauthlib import OAuth1Session
 from datetime import datetime, timedelta
+
 
 
 #-----------------------------------------------------------------------------------------------------------------------------------
@@ -41,46 +42,130 @@ st.markdown("<h1 style='text-align: center; font-size: 70px;'>ORDERS</h1>", unsa
 
 #-----------------------------------------------------------------------------------------------------------------------------------
 #OBTENER DATOS DE API
+def obtener_datos_api(cache_file="api_data_cache.pkl"):
+    """
+    Obtiene los datos de la API y los guarda en caché si es necesario.
 
-config = configparser.ConfigParser() # Crear un objeto de configuración
-config.read('config.ini')
+    Parameters:
+    - cache_file (str): Nombre del archivo de caché.
 
-# URL de la API que deseas acceder
-url = "https://pranna.es/wp-json/wc/v3/orders"
+    Returns:
+    - list: Datos de la API.
+    """
+    if os.path.exists(cache_file):
+        return joblib.load(cache_file)
 
-# Credenciales de OAuth
-consumer_key = config['API']['consumer_key']
-consumer_secret = config['API']['consumer_secret']
+    config = configparser.ConfigParser()
+    config.read('config.ini')
 
-# Crear una sesión OAuth
-oauth = OAuth1Session(consumer_key, client_secret=consumer_secret)
+    # URL de la API que deseas acceder
+    url = "https://pranna.es/wp-json/wc/v3/orders"
 
-# Calcular la fecha actual y la fecha 
-end_date = datetime.now()
-start_date = end_date - timedelta(days=30)  
+    # Credenciales de OAuth
+    consumer_key = config['API']['consumer_key']
+    consumer_secret = config['API']['consumer_secret']
 
-all_data = []
-page = 1
-while True:
-    # Parámetros para filtrar por rango de fechas y página
-    params = {
-        'after': start_date.isoformat(),
-        'before': end_date.isoformat(),
-        'page': page}
-    # Realizar la solicitud a la API
-    response = oauth.get(url, params=params)
-    data = response.json()
+    # Crear una sesión OAuth
+    oauth = OAuth1Session(consumer_key, client_secret=consumer_secret)
 
-    if not data:
-        break
-    all_data.extend(data)
-    page += 1
+    # Calcular la fecha actual y la fecha
+    end_date = datetime.now()
+    start_date = end_date - timedelta(days=30)
+
+    all_data = []
+    page = 1
+    while True:
+        # Parámetros para filtrar por rango de fechas y página
+        params = {
+            'after': start_date.isoformat(),
+            'before': end_date.isoformat(),
+            'page': page
+        }
+        # Realizar la solicitud a la API
+        response = oauth.get(url, params=params)
+
+        if response.text.strip() == "[]":
+            break
+
+        data = response.json()
+
+        if not data:
+            break
+        all_data.extend(data)
+        page += 1
+
+    # Guardar en caché los datos descargados
+    joblib.dump(all_data, cache_file)
+
+    return all_data
+
+
+#-----------------------------------------------------------------------------------------------------------------------------------
+#ACTUALIZAR DATOS DE API
+def actualizar_cache_api(cache_file="api_data_cache.pkl"):
+    """
+    Actualiza la caché con los datos más recientes de la API.
+
+    Parameters:
+    - cache_file (str): Nombre del archivo de caché.
+
+    Returns:
+    - list: Datos actualizados de la API.
+    """
+    config = configparser.ConfigParser()
+    config.read('config.ini')
+
+    # URL de la API que deseas acceder
+    url = "https://pranna.es/wp-json/wc/v3/orders"
+
+    # Credenciales de OAuth
+    consumer_key = config['API']['consumer_key']
+    consumer_secret = config['API']['consumer_secret']
+
+    # Crear una sesión OAuth
+    oauth = OAuth1Session(consumer_key, client_secret=consumer_secret)
+
+    # Calcular la fecha actual y la fecha
+    end_date = datetime.now()
+    start_date = end_date - timedelta(days=30)
+
+    all_data = []
+    page = 1
+    while True:
+        # Parámetros para filtrar por rango de fechas y página
+        params = {
+            'after': start_date.isoformat(),
+            'before': end_date.isoformat(),
+            'page': page
+        }
+        # Realizar la solicitud a la API
+        response = oauth.get(url, params=params)
+
+        if response.text.strip() == "[]":
+            break
+
+        data = response.json()
+
+        if not data:
+            break
+        all_data.extend(data)
+        page += 1
+
+    # Guardar en caché los datos descargados
+    joblib.dump(all_data, cache_file)
+
+    return all_data
+
+#BOTON
+if st.button("🔄"):
+    actualizar_cache_api()
 
 
 #-----------------------------------------------------------------------------------------------------------------------------------
 #NORMALIZAR DE DATOS API
 
 def normalize_data(all_data):
+    all_data = obtener_datos_api()
     # Normalizar los datos de pedidos con prefijo "order_"
     df_order = pd.json_normalize(all_data, meta=["id"], sep="_", record_prefix="order")
     df_order = df_order.drop(columns=["line_items", "meta_data", 'coupon_lines', 'shipping_lines'])
@@ -121,6 +206,7 @@ def normalize_data(all_data):
 
 client_columns= ['id','status','shipping_first_name','shipping_address_1','shipping_address_2','_delivery_date',
                 'delivery_time_frame','total']
+all_data= obtener_datos_api()
 df= normalize_data(all_data)
 df_client= df[client_columns]
 
@@ -145,12 +231,13 @@ col_name= { 'id':'id',
             'PRAN01':'Alubias',
             'PRAN02':'Espinaca',
             'PRAN03':'Garbanzos', 
-            'PRAN04': 'Lentejas',
+            'PRAN04':'Lentejas',
             'PRAN05':'Remolacha SG',
-            'PRAN06': 'Setas',
-            'PRAN08': 'Sueca',
-            'PRAN07': 'Shitake SG',
-            'PRAN09': 'Frankfurt'}
+            'PRAN05-1':'Remolacha 180',
+            'PRAN06':'Setas',
+            'PRAN08':'Sueca',
+            'PRAN07':'Shitake SG',
+            'PRAN09':'Frankfurt'}
 
 #Crea un DataFrame con todas las columnas de 'col_name' y valores iniciales en 0
 default_values = {col: 0 for col in col_name.keys()}
@@ -167,10 +254,10 @@ df_orders.columns.name = None
 df_orders.rename(columns=col_name,inplace=True)
 df_orders.fillna(0, inplace=True)
 #print(df_orders.columns)
-df_orders["Total"]= df_orders["Garbanzos"]+df_orders["Lentejas"]+df_orders["Espinaca"]+df_orders["Setas"]+df_orders["Alubias"]+df_orders["Frankfurt"]+df_orders["Sueca"]+df_orders["Remolacha SG"]+df_orders["Shitake SG"]
+df_orders["Total"]= df_orders["Garbanzos"]+df_orders["Lentejas"]+df_orders["Espinaca"]+df_orders["Setas"]+df_orders["Alubias"]+df_orders["Frankfurt"]+df_orders["Sueca"]+df_orders["Remolacha SG"]+df_orders["Shitake SG"]+df_orders["Remolacha 180"]
 df_orders["cant_eti"]= df_orders["Total"].astype(float)-df_orders["Remolacha SG"].astype(float)-df_orders["Shitake SG"].astype(float)
 df_orders["Etiquetas"]= np.ceil(df_orders["cant_eti"]/6).astype(int)
-df_orders=df_orders[["id", "Total","Etiquetas", "Alubias" , "Espinaca" , "Garbanzos" , "Sueca" , "Lentejas" , "Setas" ,"Frankfurt" ,"Remolacha SG" , "Shitake SG" ]]
+df_orders=df_orders[["id", "Total","Etiquetas", "Alubias" , "Espinaca" , "Garbanzos" , "Sueca" , "Lentejas" , "Setas" ,"Frankfurt" ,"Remolacha 180","Remolacha SG" , "Shitake SG" ]]
 
 
 #-----------------------------------------------------------------------------------------------------------------------------------
@@ -182,7 +269,7 @@ df_app= df_app[df_app['Status']=='processing']
 
 df_app= df_app[['id','Nombre', 'Dirección1', 'Dirección2', 'Dia', 'Hora',
        'Importe', 'Total', 'Etiquetas', 'Alubias', 'Espinaca', 'Garbanzos',
-       'Sueca', 'Lentejas', 'Setas', 'Frankfurt', 'Remolacha SG',
+       'Sueca', 'Lentejas', 'Setas', 'Frankfurt', 'Remolacha 180','Remolacha SG',
        'Shitake SG']]
 
 preparado = pd.DataFrame({"A_Preparar":[False]})
@@ -204,29 +291,26 @@ else:
 #-----------------------------------------------------------------------------------------------------------------------------------
 #TABLA DE DATOS FINAL
 
-df_entrega=st.data_editor(
-                        filtered_df,
-                        column_config={"A_Preparar": st.column_config.CheckboxColumn(
-                        "A_Preparar",
-                        help="Que pedidos vas a preparar?",
-                        default=False),
-                        "Estado": st.column_config.SelectboxColumn(
-                        "Estado del pedido",
-                        help="Seleccionar Estado del pedido",
-                        width="medium",
-                        options=[" ",
-                                 "🔝 Pedido Preparado",
-                                 "🟨 Entregado sin pagar",
-                                 "✅ Entregado y pagado"],
-                        required=False)},
+df_entrega=st.data_editor(filtered_df,
+                        column_config={
+                            "A_Preparar":st.column_config.CheckboxColumn(
+                                            "A_Preparar",
+                                            help="Que pedidos vas a preparar?",
+                                            default=False),
+                            "Estado":st.column_config.SelectboxColumn(
+                                            "Estado del pedido",
+                                            help="Seleccionar Estado del pedido",
+                                            width="medium",
+                                            options=[" ",
+                                                     "🔝 Pedido Preparado",
+                                                     "🟨 Entregado sin pagar",
+                                                     "✅ Entregado y pagado"],
+                                            required=False)},
                         disabled=['id',"Nombre","Dia","Hora",
-                                    'Dirección1',
-                                    'Dirección2',
-                                    'Importe',
-                                    "Total","Etiquetas",
-                                    "Frankfurt" , "Alubias" ,
-                                    "Espinaca" , "Garbanzos", 
-                                    "Sueca" , "Lentejas" , "Setas" ,
+                                    'Dirección1','Dirección2',
+                                    'Importe',"Total","Etiquetas",
+                                    "Frankfurt" , "Alubias" ,"Espinaca" , "Garbanzos", 
+                                    "Sueca" , "Lentejas" , "Setas" ,"Remolacha 180",
                                     "Remolacha SG" , "Shitake SG" ],
                         hide_index=True)
 
@@ -241,6 +325,7 @@ total_sueca = pedidos_preparados['Sueca'].sum()
 total_lentejas = pedidos_preparados['Lentejas'].sum()
 total_setas = pedidos_preparados['Setas'].sum()
 total_remola = pedidos_preparados['Remolacha SG'].sum()
+total_remola180 = pedidos_preparados['Remolacha 180'].sum()
 total_shitake = pedidos_preparados['Shitake SG'].sum()
 total_frankfurt = pedidos_preparados['Frankfurt'].sum()
 total_tarjetas = pedidos_preparados['Etiquetas'].sum()
@@ -275,12 +360,12 @@ with button2:
 st.header("Total a preparar")
 empty1,etiqueta1,column_1,column_2,column_3,column_4,empty2=st.columns(7)
 etiqueta1.metric("Etiquetas", total_tarjetas)
-style_metric_cards( background_color = "#F2D17B",
-                    border_size_px = 0,
-                    border_color= "#CCC",
-                    border_radius_px= 9,
-                    border_left_color= "#FDF8E0",
-                    box_shadow = False)
+# style_metric_cards( background_color = "#F2D17B",
+#                     border_size_px = 0,
+#                     border_color= "#CCC",
+#                     border_radius_px= 9,
+#                     border_left_color= "#FDF8E0",
+#                     box_shadow = False)
 with  empty1:
     st.empty()
 column_1.metric("Alubias", total_alubias,)
@@ -319,6 +404,11 @@ if st.button("Confirmar Preparacion"):
     for index, row in df_entrega.iterrows():
         if row["Estado"] == "✅ Entregado y pagado":
             target_id = row["id"]
+                # Credenciales de OAuth
+            config = configparser.ConfigParser()
+            config.read('config.ini')    
+            consumer_key = config['API']['consumer_key']
+            consumer_secret = config['API']['consumer_secret']
             update_order_status(target_id, consumer_key, consumer_secret)
 
 
@@ -327,58 +417,60 @@ if st.button("Confirmar Preparacion"):
 
 st.write("---")
 st.write("##")
-   
+
 st.header("Filtros")
 
 # Crear un filtro para el rango de fechas y nombres
 df_app1['Dia'] = pd.to_datetime(df_app1['Dia'], errors='coerce')
-#df_app1['Dia'] = df_app1['Dia'].dt.strftime('%d/%m/%Y')
+
+# Filtrar fechas no nulas
+valid_dates = df_app1['Dia'].dropna()
 
 columna1, columna2 = st.columns(2)
 with columna1:
-    start_date = pd.to_datetime(st.date_input("Fecha de inicio", pd.to_datetime(df_app1['Dia'].min(), errors='coerce')))
+    #start_date = st.date_input("Fecha de inicio", pd.to_datetime(df_app1['Dia'].min(), errors='coerce'))
+    start_date = st.date_input("Fecha de inicio", valid_dates.min() if not valid_dates.empty else pd.to_datetime("today"), key="start_date")
+    start_date = pd.to_datetime(start_date)  # Convierte a datetime64[ns]
 with columna2:
-    end_date = pd.to_datetime(st.date_input("Fecha de fin", pd.to_datetime(df_app1['Dia'].max(), errors='coerce')))
+    #end_date = st.date_input("Fecha de fin", pd.to_datetime(df_app1['Dia'].max(), errors='coerce'))
+    end_date = st.date_input("Fecha de fin", valid_dates.max() if not valid_dates.empty else pd.to_datetime("today"), key="end_date")
+    end_date = pd.to_datetime(end_date)  # Convierte a datetime64[ns]
 
-selected_client = st.multiselect("Filtrar por Cliente",list(df_app1['Nombre'].unique()))
-    
-if not selected_client:
-    # Si no se selecciona ningún nombre, mostrar todos los datos dentro del rango de fechas
-    filtered_df = df_app1[(~df_app1['Dia'].isna()) & (df_app1['Dia'] >= start_date) & (df_app1['Dia'] <= end_date)]
+
+# Aplicar filtros por fecha
+if start_date is not None and end_date is not None:
+    filtered_df1 = df_app1[(df_app1['Dia'] >= start_date) & (df_app1['Dia'] <= end_date)]
 else:
-    # Si se selecciona al menos un nombre, aplicar el filtro por nombre y por fecha
-    filtered_df = df_app1[(df_app1['Nombre'].isin(selected_client)) & (~df_app1['Dia'].isna()) & (df_app1['Dia'] >= start_date) & (df_app1['Dia'] <= end_date)]
+    filtered_df1 = df_app1
 
 
-if df_app1 is not None:
-    cant_pedidos= len(filtered_df)
-    filtered_df['Importe']=filtered_df['Importe'].str.replace('€', '').astype(float).round()
-    
-    if selected_client:
-        monto_pedido= filtered_df[filtered_df["Nombre"].isin(selected_client)]["Importe"].sum()
-    else:
-        monto_pedido= filtered_df["Importe"].sum()
-        
+# Aplicar filtro por cliente
+selected_client = st.multiselect("Filtrar por Cliente", list(df_app1['Nombre'].unique()))
+if selected_client:
+    filtered_df1 = filtered_df1[filtered_df1['Nombre'].isin(selected_client)]
+else:
+    filtered_df1 = df_app1
 
-    total_alubias1 = filtered_df['Alubias'].sum()
-    total_espinaca1 = filtered_df['Espinaca'].sum()
-    total_garbanzos1 = filtered_df['Garbanzos'].sum()
-    total_sueca1 = filtered_df['Sueca'].sum()
-    total_lentejas1 = filtered_df['Lentejas'].sum()
-    total_setas1 = filtered_df['Setas'].sum()
-    total_remola1 = filtered_df['Remolacha SG'].sum()
-    total_shitake1 = filtered_df['Shitake SG'].sum()
-    total_tarjetas1 = filtered_df['Etiquetas'].sum()
+# Mostrar información solo si hay datos después de aplicar los filtros
+if not filtered_df1.empty:
+    cant_pedidos = len(filtered_df1)
+    filtered_df1.loc[:, 'Importe'] = filtered_df1['Importe'].str.replace('€', '').astype(float).round()
+    monto_pedido = filtered_df1["Importe"].sum()
+
+    total_alubias1 = filtered_df1['Alubias'].sum()
+    total_espinaca1 = filtered_df1['Espinaca'].sum()
+    total_garbanzos1 = filtered_df1['Garbanzos'].sum()
+    total_sueca1 = filtered_df1['Sueca'].sum()
+    total_lentejas1 = filtered_df1['Lentejas'].sum()
+    total_setas1 = filtered_df1['Setas'].sum()
+    total_remola1 = filtered_df1['Remolacha SG'].sum()
+    total_shitake1 = filtered_df1['Shitake SG'].sum()
+    total_tarjetas1 = filtered_df1['Etiquetas'].sum()
 
     st.header("Informacion")
     vacio1,importe11,pedidos22,vacio2= st.columns((1,2,2,1))
     st.write("##")
-    style_metric_cards( background_color = "#F2D17B",
-                    border_size_px = 0,
-                    border_color= "#CCC",
-                    border_radius_px= 9,
-                    border_left_color= "#FDF8E0",
-                    box_shadow = False)
+    
     vacio1.empty()
     importe11.metric("Importe",f'€{monto_pedido}')
     pedidos22.metric("Pedidos", cant_pedidos)
@@ -401,5 +493,202 @@ if df_app1 is not None:
     column_77.metric("Shitake", total_shitake1)
     column_88.metric("Remolacha", total_remola1)
     empty444.empty()
+    # style_metric_cards( background_color = "#F2D17B",
+    #                 border_size_px = 0,
+    #                 border_color= "#CCC",
+    #                 border_radius_px= 9,
+    #                 border_left_color= "#FDF8E0",
+    #                 box_shadow = False)
+    
+st.dataframe(filtered_df1,use_container_width=True)
 
-st.dataframe(filtered_df,use_container_width=True)
+
+
+
+
+
+
+
+
+
+
+
+# selected_client = st.multiselect("Filtrar por Cliente", list(df_app1['Nombre'].unique()))
+
+
+# if not selected_client:
+#     # Si no se selecciona ningún nombre, mostrar todos los datos dentro del rango de fechas
+#     filtered_df = df_app1[(~df_app1['Dia'].isna()) & (df_app1['Dia'] >= start_date) & (df_app1['Dia'] <= end_date)]
+# else:
+#     # Si se selecciona al menos un nombre, aplicar el filtro por nombre y por fecha
+#     filtered_df = df_app1[(df_app1['Nombre'].isin(selected_client)) & (~df_app1['Dia'].isna()) & (df_app1['Dia'] >= start_date) & (df_app1['Dia'] <= end_date)]
+
+
+
+# if not filtered_df.empty:
+#     # Actualizar las métricas y visualizaciones aquí
+#     cant_pedidos = len(filtered_df)
+#     monto_pedido = filtered_df['Importe'].sum()
+
+#     total_alubias1 = filtered_df['Alubias'].sum()
+#     total_espinaca1 = filtered_df['Espinaca'].sum()
+#     total_garbanzos1 = filtered_df['Garbanzos'].sum()
+#     total_sueca1 = filtered_df['Sueca'].sum()
+#     total_lentejas1 = filtered_df['Lentejas'].sum()
+#     total_setas1 = filtered_df['Setas'].sum()
+#     total_remola1 = filtered_df['Remolacha SG'].sum()
+#     total_shitake1 = filtered_df['Shitake SG'].sum()
+#     total_tarjetas1 = filtered_df['Etiquetas'].sum()
+
+#     # Mostrar las métricas
+#     st.header("Informacion")
+#     st.metric("Importe", f'€{monto_pedido}', delta=cant_pedidos)
+#     st.metric("Pedidos", cant_pedidos)
+
+#     # Mostrar los totales
+#     st.header("Totales")
+#     st.metric("Alubias", total_alubias1)
+#     st.metric("Espinaca", total_espinaca1)
+#     st.metric("Garbanzos", total_garbanzos1)
+#     st.metric("Sueca", total_sueca1)
+#     st.metric("Lentejas", total_lentejas1)
+#     st.metric("Setas", total_setas1)
+#     st.metric("Shitake", total_shitake1)
+#     st.metric("Remolacha", total_remola1)
+#     st.metric("Tarjetas", total_tarjetas1)
+
+#     # Mostrar la tabla final
+#     st.dataframe(filtered_df, use_container_width=True)
+# else:
+#     st.warning("No hay datos disponibles para los filtros seleccionados.")
+
+
+
+
+
+
+
+
+
+
+
+# st.header("Filtros")
+
+# # Crear un filtro para el rango de fechas y nombres
+# df_app1['Dia'] = pd.to_datetime(df_app1['Dia'], errors='coerce')
+
+# # Filtrar fechas no nulas
+# valid_dates = df_app1['Dia'].dropna()
+
+# columna1, columna2 = st.columns(2)
+# with columna1:
+#     start_date = st.date_input("Fecha de inicio", pd.to_datetime(df_app1['Dia'].min(), errors='coerce'))
+#     #start_date = st.date_input("Fecha de inicio", valid_dates.min() if not valid_dates.empty else pd.to_datetime("today"), key="start_date")
+#     start_date = pd.to_datetime(start_date)  # Convierte a datetime64[ns]
+# with columna2:
+#     end_date = st.date_input("Fecha de fin", pd.to_datetime(df_app1['Dia'].max(), errors='coerce'))
+#     #end_date = st.date_input("Fecha de fin", valid_dates.max() if not valid_dates.empty else pd.to_datetime("today"), key="end_date")
+#     end_date = pd.to_datetime(end_date)  # Convierte a datetime64[ns]
+
+    
+# selected_client = st.multiselect("Filtrar por Cliente", list(df_app1['Nombre'].unique()))
+# # valid_dates_filtered = valid_dates.dropna()
+
+# # # Filtrar fechas no nulas antes de aplicar los filtros
+# # if not selected_client:
+# #     # Si no se selecciona ningún nombre, mostrar todos los datos dentro del rango de fechas
+# #     filtered_df = df_app1[(df_app1['Dia'].isin(valid_dates_filtered)) & (df_app1['Dia'] >= np.datetime64(start_date)) & (df_app1['Dia'] <= np.datetime64(end_date))]
+# # else:
+# #     # Si se selecciona al menos un nombre, aplicar el filtro por nombre y por fecha
+# #     filtered_df = df_app1[(df_app1['Nombre'].isin(selected_client)) & (df_app1['Dia'].isin(valid_dates_filtered)) & (df_app1['Dia'] >= np.datetime64(start_date)) & (df_app1['Dia'] <= np.datetime64(end_date))]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# # st.header("Filtros")
+
+# # # Crear un filtro para el rango de fechas y nombres
+# # #min_date = df_app1['Dia'].dropna().min()
+# # df_app1['Dia'] = pd.to_datetime(df_app1['Dia'], errors='coerce')
+# # #df_app1['Dia'] = df_app1['Dia'].dt.strftime('%d/%m/%Y')
+
+# # columna1, columna2 = st.columns(2)
+# # with columna1:
+# #     #start_date = pd.to_datetime(st.date_input("Fecha de inicio", min_date, errors='coerce'))
+# #     start_date = pd.to_datetime(st.date_input("Fecha de inicio", pd.to_datetime(df_app1['Dia'].min(), errors='coerce')))
+# # with columna2:
+# #     end_date = pd.to_datetime(st.date_input("Fecha de fin", pd.to_datetime(df_app1['Dia'].max(), errors='coerce')))
+
+# # selected_client = st.multiselect("Filtrar por Cliente",list(df_app1['Nombre'].unique()))
+    
+# if not selected_client:
+#     # Si no se selecciona ningún nombre, mostrar todos los datos dentro del rango de fechas
+#     filtered_df = df_app1[(~df_app1['Dia'].isna()) & (df_app1['Dia'] >= start_date) & (df_app1['Dia'] <= end_date)]
+# else:
+#     # Si se selecciona al menos un nombre, aplicar el filtro por nombre y por fecha
+#     filtered_df = df_app1[(df_app1['Nombre'].isin(selected_client)) & (~df_app1['Dia'].isna()) & (df_app1['Dia'] >= start_date) & (df_app1['Dia'] <= end_date)]
+
+
+# if df_app1 is not None:
+#     cant_pedidos= len(filtered_df)
+#     filtered_df['Importe']=filtered_df['Importe'].str.replace('€', '').astype(float).round()
+    
+#     if selected_client:
+#         monto_pedido= filtered_df[filtered_df["Nombre"].isin(selected_client)]["Importe"].sum()
+#     else:
+#         monto_pedido= filtered_df["Importe"].sum()
+        
+
+#     total_alubias1 = filtered_df['Alubias'].sum()
+#     total_espinaca1 = filtered_df['Espinaca'].sum()
+#     total_garbanzos1 = filtered_df['Garbanzos'].sum()
+#     total_sueca1 = filtered_df['Sueca'].sum()
+#     total_lentejas1 = filtered_df['Lentejas'].sum()
+#     total_setas1 = filtered_df['Setas'].sum()
+#     total_remola1 = filtered_df['Remolacha SG'].sum()
+#     total_shitake1 = filtered_df['Shitake SG'].sum()
+#     total_tarjetas1 = filtered_df['Etiquetas'].sum()
+
+#     st.header("Informacion")
+#     vacio1,importe11,pedidos22,vacio2= st.columns((1,2,2,1))
+#     st.write("##")
+#     style_metric_cards( background_color = "#F2D17B",
+#                     border_size_px = 0,
+#                     border_color= "#CCC",
+#                     border_radius_px= 9,
+#                     border_left_color= "#FDF8E0",
+#                     box_shadow = False)
+#     vacio1.empty()
+#     importe11.metric("Importe",f'€{monto_pedido}')
+#     pedidos22.metric("Pedidos", cant_pedidos)
+#     vacio2.empty()
+
+#     empty111,column_11,column_22,column_33,column_44,empty22=st.columns(6)
+#     st.write("##")
+#     empty111.empty()
+#     column_11.metric("Alubias", total_alubias1)
+#     column_22.metric("Espinaca", total_espinaca1)
+#     column_33.metric("Garbanzos", total_garbanzos1)
+#     column_44.metric("Sueca", total_sueca1)
+#     empty22.empty() 
+
+#     empty333,column_55,column_66,column_77,column_88,empty444=st.columns(6)
+#     st.write("##")
+#     empty333.empty()
+#     column_55.metric("Lentejas", total_lentejas1)
+#     column_66.metric("Setas", total_setas1)
+#     column_77.metric("Shitake", total_shitake1)
+#     column_88.metric("Remolacha", total_remola1)
+#     empty444.empty()
+
+# st.dataframe(filtered_df,use_container_width=True)

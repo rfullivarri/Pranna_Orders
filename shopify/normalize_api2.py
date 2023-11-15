@@ -15,7 +15,7 @@ def normalize_data_1(all_data):
         primer_valor = df_order[columna][0]
         if str(primer_valor).startswith("[{"):
             level_2_columns.append(columna)
-    print(level_2_columns)    
+    #print(level_2_columns)    
 
     # level_2= {}
     # df_order2= df_order[level_2_columns]
@@ -25,7 +25,7 @@ def normalize_data_1(all_data):
     #     level_2[variable_name] = value 
 
     #print(df_order.columns)
-    print("\n")
+    #print("\n")
     df_order2= df_order[level_2_columns]
     for l in range(len(df_order2)+1):
         value = pd.json_normalize(all_data, record_path=[str(level_2_columns[l])], errors='ignore', meta=["id"], sep="_", record_prefix=f"level_2_{l}_")
@@ -35,6 +35,9 @@ def normalize_data_1(all_data):
     df_final = df_final.drop(columns=level_2_columns)
     df_final = df_final.drop(columns='level_2_1_tax_lines')
     return df_final
+
+
+
 
 #print(len(normalize_data_1(all_data).columns))
 # dd= normalize_data_1(all_data)
