@@ -378,7 +378,7 @@ with  column_4:
 with  empty2:
     st.empty()
 st.write("##")        
-empty3,column_5,column_6,column_7,column_8,column_9,empty4=st.columns(7)
+empty3,column_5,column_6,column_7,column_8,column_9,column_10,empty4=st.columns(8)
 st.write("##")
 with  empty1:
     st.empty() 
@@ -387,10 +387,12 @@ with  column_5:
 with  column_6:
     st.metric("Setas", total_setas)
 with  column_7:
-    st.metric("Shitake", total_shitake)
+    st.metric("Remolacha 180", total_remola180)
 with  column_8:
-    st.metric("Remolacha", total_remola)
+    st.metric("Shitake", total_shitake)
 with  column_9:
+    st.metric("Remolacha", total_remola)
+with  column_10:
     st.metric("Frankfurt", total_frankfurt)
 with  empty4:
     st.empty()
