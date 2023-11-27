@@ -173,7 +173,8 @@ if st.button("🔄"):
 #NORMALIZAR DE DATOS API
 
 def normalize_data(all_data):
-    all_data = obtener_datos_api()
+    #all_data = obtener_datos_api()
+    all_data = joblib.load("api_data_cache.pkl")
     # Normalizar los datos de pedidos con prefijo "order_"
     df_order = pd.json_normalize(all_data, meta=["id"], sep="_", record_prefix="order")
     df_order = df_order.drop(columns=["line_items", "meta_data", 'coupon_lines', 'shipping_lines'])
@@ -214,7 +215,8 @@ def normalize_data(all_data):
 
 client_columns= ['id','status','shipping_first_name','shipping_address_1','shipping_address_2','_delivery_date',
                 'delivery_time_frame','total']
-all_data= obtener_datos_api()
+all_data = joblib.load("api_data_cache.pkl")
+#all_data= obtener_datos_api()
 df= normalize_data(all_data)
 df_client= df[client_columns]
 
