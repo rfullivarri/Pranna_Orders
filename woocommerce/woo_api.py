@@ -1,6 +1,5 @@
 import configparser
 from requests_oauthlib import OAuth1Session
-from requests_oauthlib import OAuth1Session
 from datetime import datetime, timedelta
 
 

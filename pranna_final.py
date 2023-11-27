@@ -101,7 +101,7 @@ def obtener_datos_api(cache_file="api_data_cache.pkl"):
 
 
 #-----------------------------------------------------------------------------------------------------------------------------------
-#ACTUALIZAR DATOS DE API
+# #ACTUALIZAR DATOS DE API
 def actualizar_cache_api(cache_file="api_data_cache.pkl"):
     """
     Actualiza la caché con los datos más recientes de la API.
@@ -143,6 +143,8 @@ def actualizar_cache_api(cache_file="api_data_cache.pkl"):
 
         if response.text.strip() == "[]":
             break
+            if not response.text:
+                        break
 
         data = response.json()
 
@@ -151,10 +153,16 @@ def actualizar_cache_api(cache_file="api_data_cache.pkl"):
         all_data.extend(data)
         page += 1
 
+ # Eliminar el archivo de caché existente
+    if os.path.exists(cache_file):
+        os.remove(cache_file)
+
     # Guardar en caché los datos descargados
     joblib.dump(all_data, cache_file)
 
     return all_data
+
+
 
 #BOTON
 if st.button("🔄"):
