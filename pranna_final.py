@@ -54,57 +54,16 @@ def obtener_datos_api(cache_file="api_data_cache.pkl"):
     """
     if os.path.exists(cache_file):
         return joblib.load(cache_file)
-
-    config = configparser.ConfigParser()
-    config.read('config.ini')
-
-    # URL de la API que deseas acceder
-    url = "https://pranna.es/wp-json/wc/v3/orders"
-
-    # Credenciales de OAuth
-    consumer_key = config['API']['consumer_key']
-    consumer_secret = config['API']['consumer_secret']
-
-    # Crear una sesión OAuth
-    oauth = OAuth1Session(consumer_key, client_secret=consumer_secret)
-
-    # Calcular la fecha actual y la fecha
-    end_date = datetime.now()
-    start_date = end_date - timedelta(days=30)
-
-    all_data = []
-    page = 1
-    while True:
-        # Parámetros para filtrar por rango de fechas y página
-        params = {
-            'after': start_date.isoformat(),
-            'before': end_date.isoformat(),
-            'page': page
-        }
-        # Realizar la solicitud a la API
-        response = oauth.get(url, params=params)
-
-        if response.text.strip() == "[]":
-            break
-
-        data = response.json()
-
-        if not data:
-            break
-        all_data.extend(data)
-        page += 1
-
-    # Guardar en caché los datos descargados
-    joblib.dump(all_data, cache_file)
-
-    return all_data
+    
+    actualizar_cache_api(cache_file="api_data_cache.pkl")
 
 
 #-----------------------------------------------------------------------------------------------------------------------------------
 # #ACTUALIZAR DATOS DE API
 def actualizar_cache_api(cache_file="api_data_cache.pkl"):
     """
-    Actualiza la caché con los datos más recientes de la API.
+    - Actualiza la caché con los datos más recientes de la API.
+    - Si exite archivo viejo lo elimina.
 
     Parameters:
     - cache_file (str): Nombre del archivo de caché.
@@ -143,8 +102,8 @@ def actualizar_cache_api(cache_file="api_data_cache.pkl"):
 
         if response.text.strip() == "[]":
             break
-            if not response.text:
-                        break
+        if not response.text:
+                    break
 
         data = response.json()
 
@@ -153,7 +112,7 @@ def actualizar_cache_api(cache_file="api_data_cache.pkl"):
         all_data.extend(data)
         page += 1
 
- # Eliminar el archivo de caché existente
+    # Eliminar el archivo de caché existente
     if os.path.exists(cache_file):
         os.remove(cache_file)
 
@@ -169,11 +128,14 @@ if st.button("🔄"):
     actualizar_cache_api()
 
 
+#TRIGGER DE INICIO
+obtener_datos_api()
+
+
 #-----------------------------------------------------------------------------------------------------------------------------------
 #NORMALIZAR DE DATOS API
 
 def normalize_data(all_data):
-    #all_data = obtener_datos_api()
     all_data = joblib.load("api_data_cache.pkl")
     # Normalizar los datos de pedidos con prefijo "order_"
     df_order = pd.json_normalize(all_data, meta=["id"], sep="_", record_prefix="order")
@@ -213,13 +175,11 @@ def normalize_data(all_data):
 #-----------------------------------------------------------------------------------------------------------------------------------
 # #DATOS DEL CLIENTE
 
+all_data = joblib.load("api_data_cache.pkl")
 client_columns= ['id','status','shipping_first_name','shipping_address_1','shipping_address_2','_delivery_date',
                 'delivery_time_frame','total']
-all_data = joblib.load("api_data_cache.pkl")
-#all_data= obtener_datos_api()
 df= normalize_data(all_data)
 df_client= df[client_columns]
-
 df_client_u=df_client.drop_duplicates(subset='id')
 client_col_name={'shipping_first_name':'Nombre',
                  'Teléfono (facturación)':'Teléfono',
@@ -370,12 +330,12 @@ with button2:
 st.header("Total a preparar")
 empty1,etiqueta1,column_1,column_2,column_3,column_4,empty2=st.columns(7)
 etiqueta1.metric("Etiquetas", total_tarjetas)
-# style_metric_cards( background_color = "#F2D17B",
-#                     border_size_px = 0,
-#                     border_color= "#CCC",
-#                     border_radius_px= 9,
-#                     border_left_color= "#FDF8E0",
-#                     box_shadow = False)
+style_metric_cards( background_color = "#F2D17B",
+                    border_size_px = 0,
+                    border_color= "#CCC",
+                    border_radius_px= 9,
+                    border_left_color= "#FDF8E0",
+                    box_shadow = False)
 with  empty1:
     st.empty()
 column_1.metric("Alubias", total_alubias,)
